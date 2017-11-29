@@ -12,12 +12,6 @@
           <md-icon>search</md-icon>
         </md-button>
       </md-toolbar>
-
-      <md-tabs md-fixed md-centered :md-dynamic-height="false" class="hide-tab-content" @change="alterarView">
-        <md-tab  :md-active="view === 'T'" md-label="Todas"></md-tab>
-        <md-tab :md-active="view === 'R'" md-label="Receber"></md-tab>
-        <md-tab :md-active="view === 'P'" md-label="Pagar"></md-tab>
-      </md-tabs>
     </md-whiteframe>
 
     <div class="main-content">
@@ -33,15 +27,15 @@
       <md-list class="md-double-line md-dense">
         <md-divider></md-divider>
 
-        <md-list-item v-for="(conta, idx) in listaContas" :key="conta.id">
+        <md-list-item v-for="contato in contatos" :key="contato.id">
           <md-ink-ripple></md-ink-ripple>
-          <md-icon>{{ conta.icone }}</md-icon>
+          <md-icon>account_circle</md-icon>
 
           <div class="md-list-text-container">
-            <span>{{ conta.contato }}</span>
+            <span>{{ contato.nome }}</span>
             <p>
-              <span :class="{ 'text-receber': conta.tipo === 'R', 'text-pagar': conta.tipo === 'P' }">
-                {{ conta.valor - conta.pago | preco }}
+              <span :class="{ 'text-receber': contato.saldo > 0, 'text-pagar': contato.saldo < 0 }">
+                {{ Math.abs(contato.saldo) | preco }}
               </span>
             </p>
           </div>
@@ -51,20 +45,19 @@
       </md-list>
     </div>
 
-    <md-speed-dial md-mode="scale" class="md-fab-bottom-right">
-      <md-button class="md-fab" md-fab-trigger>
-        <md-icon md-icon-morph>close</md-icon>
-        <md-icon>add</md-icon>
-      </md-button>
+    <md-dialog-prompt
+      md-title="Novo contato"
+      md-ok-text="Incluir"
+      md-cancel-text="Cancelar"
+      md-input-placeholder="Nome"
+      v-model="nomeNovoContato"
+      @close="onCloseDialogNovoContato"
+      ref="dialogNovoContato">
+    </md-dialog-prompt>
 
-      <md-button class="md-fab md-mini md-clean" @click="incluir('P')">
-        <md-icon>file_upload</md-icon>
-      </md-button>
-
-      <md-button class="md-fab md-mini md-clean" @click="incluir('R')">
-        <md-icon>file_download</md-icon>
-      </md-button>
-    </md-speed-dial>
+    <md-button class="md-fab md-fab-bottom-right" @click="incluirContato">
+      <md-icon>add</md-icon>
+    </md-button>
   </div>
 </template>
 
@@ -72,59 +65,42 @@
 export default {
   data () {
     return {
-      view: 'T',
-      contas: [{
+      contatos: [{
         id: 1,
-        tipo: 'R',
-        contato: 'Camila',
-        icone: 'account_circle',
-        valor: 1600,
-        pago: 600
+        nome: 'Camila',
+        saldo: 530
       }, {
         id: 2,
-        tipo: 'R',
-        contato: 'Felipe',
-        icone: 'account_circle',
-        valor: 700,
-        pago: 500
+        nome: 'Felipe',
+        saldo: 150
       }, {
         id: 3,
-        tipo: 'P',
-        contato: 'Rafael',
-        icone: 'shopping_cart',
-        valor: 43,
-        pago: 0
-      }]
+        nome: 'Rafael',
+        saldo: -5
+      }],
+      nomeNovoContato: ''
     }
   },
 
   computed: {
-    listaContas () {
-      return this.contas.filter((conta) => {
-        if (conta.valor - conta.pago <= 0) {
-          return false
-        }
-
-        return this.view === 'T' || conta.tipo === this.view
-      })
-    },
     totalReceber () {
       var total = 0
 
-      this.contas.forEach((conta) => {
-        if (conta.tipo === 'R' && conta.valor - conta.pago > 0) {
-          total += conta.valor - conta.pago
+      this.contatos.forEach((contato) => {
+        if (contato.saldo > 0) {
+          total += contato.saldo
         }
       })
 
       return total
     },
+
     totalPagar () {
       var total = 0
 
-      this.contas.forEach((conta) => {
-        if (conta.tipo === 'P' && conta.valor - conta.pago > 0) {
-          total += conta.valor - conta.pago
+      this.contatos.forEach((contato) => {
+        if (contato.saldo < 0) {
+          total += contato.saldo * -1
         }
       })
 
@@ -133,26 +109,19 @@ export default {
   },
 
   methods: {
-    alterarView (view) {
-      this.view = {
-        'T': 'T',
-        '0': 'T',
-        'R': 'R',
-        '1': 'R',
-        'P': 'P',
-        '2': 'P'
-      }[view] || this.view
+    incluirContato () {
+      this.$refs['dialogNovoContato'].open()
+      this.nomeNovoContato = ''
     },
 
-    incluir (tipo) {
-      this.contas.push({
-        id: this.contas.length + 1,
-        tipo: tipo,
-        contato: 'Anônimo',
-        icone: 'account_circle',
-        valor: 100,
-        pago: 0
-      })
+    onCloseDialogNovoContato (status) {
+      if (status === 'ok' && this.nomeNovoContato.trim().length) {
+        this.contatos.push({
+          id: this.contatos.length,
+          nome: this.nomeNovoContato,
+          saldo: 0
+        })
+      }
     }
   }
 }
@@ -160,6 +129,6 @@ export default {
 
 <style scoped>
   .main-content {
-    top: 112px;
+    top: 64px;
   }
 </style>
