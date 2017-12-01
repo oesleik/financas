@@ -62,24 +62,23 @@
 </template>
 
 <script>
+import db from '../../database'
+
+console.log(db)
+
 export default {
   data () {
+    getContatos()
     return {
-      contatos: [{
-        id: 1,
-        nome: 'Camila',
-        saldo: 530
-      }, {
-        id: 2,
-        nome: 'Felipe',
-        saldo: 150
-      }, {
-        id: 3,
-        nome: 'Rafael',
-        saldo: -5
-      }],
+      contatos: [],
       nomeNovoContato: ''
     }
+  },
+
+  mounted () {
+    getContatos().then((contatos) => {
+      this.contatos = contatos
+    })
   },
 
   computed: {
@@ -116,14 +115,34 @@ export default {
 
     onCloseDialogNovoContato (status) {
       if (status === 'ok' && this.nomeNovoContato.trim().length) {
-        this.contatos.push({
-          id: this.contatos.length,
-          nome: this.nomeNovoContato,
-          saldo: 0
+        var contato = {
+          nome: this.nomeNovoContato
+        }
+
+        db.contatos.add(contato).then((id) => {
+          contato.id = id
+          contato.saldo = 0
+          this.contatos.unshift(contato)
         })
       }
     }
   }
+}
+
+function getContatos () {
+  return db.contatos.toArray((contatos) => {
+    return Promise.all(contatos.map((contato) => {
+      return db.lancamentos.where('id_contato').equals(contato.id).toArray().then((lancamentos) => {
+        contato.saldo = 0
+
+        lancamentos.forEach((lancamento) => {
+          contato.saldo += lancamento.valor
+        })
+
+        return contato
+      })
+    }))
+  })
 }
 </script>
 
