@@ -7,10 +7,6 @@
         </md-button>
 
         <h2 class="md-title" style="flex: 1;">Finanças</h2>
-
-        <md-button class="md-icon-button">
-          <md-icon>search</md-icon>
-        </md-button>
       </md-toolbar>
     </md-whiteframe>
 
@@ -30,7 +26,6 @@
         <md-list-item v-for="contato in contatos" :key="contato.id">
           <router-link :to="'/contas/' + contato.id">
             <md-ink-ripple></md-ink-ripple>
-            <md-icon>account_circle</md-icon>
 
             <div class="md-list-text-container">
               <span>{{ contato.nome }}</span>
