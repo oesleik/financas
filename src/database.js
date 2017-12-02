@@ -3,7 +3,7 @@ const database = new Dexie('financas')
 
 database.version(1).stores({
   contatos: '++id,&nome',
-  lancamentos: '++id,id_contato,valor'
+  lancamentos: '++id,id_contato,valor,data'
 })
 
 export default database

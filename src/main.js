@@ -9,6 +9,7 @@ import mixinFilters from '@/filters'
 
 import ResumoTotais from '@/components/ResumoTotais'
 import ResumoTotal from '@/components/ResumoTotal'
+import Spacer from '@/components/Spacer'
 
 Vue.mixin({
   filters: mixinFilters
@@ -16,6 +17,7 @@ Vue.mixin({
 
 Vue.component('resumo-totais', ResumoTotais)
 Vue.component('resumo-total', ResumoTotal)
+Vue.component('spacer', Spacer)
 
 Vue.use(VueMaterial)
 Vue.config.productionTip = false
